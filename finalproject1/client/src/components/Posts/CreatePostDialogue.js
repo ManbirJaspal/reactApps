@@ -15,7 +15,7 @@ class CreatePostDialogue extends React.Component  {
   }
 
   onClickHandler = () => {
-  this.props.onPostSubmit(this.state.text);
+  this.props.onPostSubmit(this.state.text, this.state.title );
 
   }
 

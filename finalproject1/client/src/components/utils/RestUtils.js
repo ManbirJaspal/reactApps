@@ -19,46 +19,25 @@ export function getPosts(groupId) {
   );
 }
 
-export function signUp(
-  email,
-  password,
-  fname,
-  lname,
-  address1,
-  address2,
-  city,
-  state,
-  zip,
-  stype,
-  majorDept,
-  gradAssistant
-)
 
-{
+
+
+export function login(email, password) {
   const data = qs.stringify({
     email: email,
-    password: password,
-    fname: fname,
-    lname: lname,
-    address1: address1,
-    address2: address2,
-    city: city,
-    state: state,
-    zip: zip,
-    stype: stype,
-    majorDept: majorDept,
-    gradAssistant: gradAssistant
+    password: password
   });
-
-  axios.post(url + "student", data).then(
-    function(response) {
-      console.log(response);
-    },
-    function(error) {
-      console.log(error);
-    }
-  );
+  console.log("inside restUTILS for login")
+     axios.post(url + "login", data)
+     .then((getResponse) => {
+       console.log("post response");
+       console.log(getResponse.data);
+     })
+     .catch(function(response) {
+         console.log(response.body);
+       });
 }
+
 
 export function getGroup(groupName) {
   const data = qs.stringify({ group_name: groupName });

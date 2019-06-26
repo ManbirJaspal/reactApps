@@ -1,6 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const Pool = require('pg').Pool;
+var http = require('http');
+var formidable = require('formidable');
+var fs = require('fs');
 
 const app = express();
 const port = 8082;
@@ -14,55 +17,63 @@ const pool = new Pool({
     password: 'msnjaspal',
     port: 5432,
 });
+pool.connect(function(err){
+  if(!err) {
+      console.log("Database is connected");
+  } else {
+      console.log("Error connecting database");
+  }
+  });
 
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true}));
 
-app.use(bodyParser.json());
-app.use(
-    bodyParser.urlencoded({
-        extended: false,
-    })
-);
-
-app.use((req, res, next) => {
-    res.header('access-control-allow-origin', hosts);
-    next();
+app.use(function(request, response, next) {
+response.header("Access-Control-Allow-Origin", "*");
+response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+next();
 });
-
 
 app.get('/groups', getGroups);
 app.get('/posts', getPosts);
 app.post('/student', createStudent);
-app.post('/login', loginStudent);
+app.post('/login', studentLogin);
 app.get('/comments', getComments);
 app.post('/posts' , createPost);
-
 
 
 function createPost(request,response) {
   console.log("inside createPost");
   console.log(request.body);
+  var post = request.body.post,
+   group_id = request.body.group_id,
+   user_id = request.body.user_id,
+   title = request.body.title;
 
-  const post = request.body.text;
-  const group_id = request.body.group_id;
-  const user_id = request.body.user_id;
-  const post_id = request.body.post_id;
-
-
-
-  pool.query('INSERT INTO student (email, password, fname, lname, address1, address2, city, state, zip) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)', [email, password, fname, lname, address1, address2, city, state, zip], function(error, result) {
-      if (error) {
-          throw error
+    pool.connect((err, db, done) => {
+      if(err) {
+        return response.status(400).send(err);
       }
-      response.status(200);
-  });
+      else {
+        db.query('INSERT INTO posts (group_id, user_id, post, title) VALUES ($1, $2, $3, $4)', [group_id, user_id, post, title], (err, results, fields) => {
+          done();
+          if(err) {
+            return response.status(400).send(err);
+          }
+            else {
+              console.log(JSON.stringify(results.rows));
+               response.status(201).send({message: 'Post Succesfull', data: JSON.stringify(results.rows)});
+          }
+        })
+      }
+    })
   }
-
 
 
 
 function getGroups (request, response) {
     console.log("inside getgroups");
-    const groupName = request.query.groupName;
+    const groupName = request.query.group_name;
  var query = "";
 
 if (groupName != null) {
@@ -104,45 +115,118 @@ function getComments (request, response) {
     })
 }
 
-function createStudent (request, response) {
-    console.log("inside createStudent");
-    console.log(request.body);
-
-
-    const email = request.body.emailId,
-        password = request.body.password,
-        fname = request.body.fname,
-        lname = request.body.lname,
-        address1 = request.body.address1,
-        address2 = request.body.address2,
-        city = request.body.city,
-        state = request.body.state,
-        zip = parseInt(request.body.zip);
-
-
-    pool.query('INSERT INTO student (email, password, fname, lname, address1, address2, city, state, zip) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)', [email, password, fname, lname, address1, address2, city, state, zip], function(error, result) {
-        if (error) {
-            throw error
+function createStudent(request, response){
+  console.log("inside createStudent()");
+  var email = request.body.email,
+          password = request.body.password,
+          fname = request.body.fname,
+          lname = request.body.lname;
+  pool.connect((err, db, done) => {
+    if(err) {
+      return response.status(400).send(err);
+    }
+    else {
+      db.query('INSERT INTO student (student_email, student_password, student_fname, student_lname) VALUES ($1, $2, $3, $4)', [email, password, fname, lname], (err, table) => {
+        done();
+        if(err) {
+          return response.status(400).send(err);
         }
-        response.status(200);
-    });
-
+        else {
+          response.status(201).send({message: 'REGISTRATION SUCCESSFULL' });
+        }
+      })
+    }
+  })
 }
 
-function loginStudent (request, response) {
-    console.log("inside Login Student!!");
-    console.log(request.query.email);
-    const email = request.query.email;
+function studentLogin(request, response){
+  console.log("inside StudentLogin()");
+  var email = request.body.email,
+      password = request.body.password;
 
-    pool.query('SELECT * FROM STUDENT WHERE email=$1)', [email], function(error, result) {
-        if(error) {
-            throw error;
+  pool.connect((err, db, done) => {
+    if(err) {
+      return response.status(400).send(err);
+    }
+    else {
+      db.query('SELECT * FROM student WHERE student_email=$1 and student_password=$2', [email, password], (err, results, fields) => {
+        done();
+        if(err) {
+          return response.status(400).send(err);
         }
-        console.log(result.rows)
-        response.status(200).json(result.rows);
-    });
+          else {
+            console.log(JSON.stringify(results.rows));
+             response.status(201).send({message: 'Login SUCCESSFULL', data: JSON.stringify(results.rows)});
+        }
+      })
+    }
+  })
+}```
 
-}
+// async function createStudent (request, response){
+//     console.log("inside createStudent");
+//     var email = request.body.email,
+//         password = request.body.password,
+//         fname = request.body.fname,
+//         lname = request.body.lname;
+//
+//
+//     // console.log("req",req.body);
+//
+//   await pool.query('INSERT INTO student (student_email, student_password, student_fname, student_lname) VALUES ($1, $2, $3, $4)', [email, password, fname, lname], function (error, results, fields) {
+//
+//     console.log(response.status(200).json(results.rows));
+//
+//     response.send({
+//       "code":200,
+//       "success":"user registered sucessfully"
+//         });
+//   }
+//   );
+// }
+
+
+
+//     const email = request.body.email,
+//         password = request.body.password,
+//         fname = request.body.fname,
+//         lname = request.body.lname;
+//
+//
+//     pool.query('INSERT INTO student (student_email, student_password, student_fname, student_lname) VALUES ($1, $2, $3, $4)', [email, password, fname, lname], function(error, result) {
+//         if (error) {
+//             throw error
+//         }
+//         response.status(200);
+//
+//     });
+//
+// }
+
+// function loginStudent (request, response) {
+//     console.log("inside Login Student!!");
+//     console.log(request.body);
+//     var email = request.body.email;
+//     var password = request.body.password;
+//       pool.query('SELECT * FROM student WHERE student_email=$1 and student_password=$2', [email, password], function (error, results, fields) {
+//   if (error) {
+//      console.log("error ocurred",error);
+//     response.send({
+//       "code":400,
+//       "failed":"error ocurred"
+//     })} else {
+//         console.log(results, response.status(200).json(results.rows));
+//         response.send({
+//           "code":204,
+//           "success":"Email and password does not match"
+//             });
+//       }
+//
+//
+//
+//   });
+// }
+
 
 
 app.listen(port);

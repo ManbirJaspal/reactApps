@@ -1,59 +1,58 @@
 import React from "react";
 import PostItem from "./PostItem";
-import CreatePostDialogue from './CreatePostDialogue';
-import axios from 'axios';
-import {url} from '../utils/RestUtils';
-import qs from 'qs';
+import PostCreate from './PostCreate';
+import { connect } from "react-redux";
+import { fetchPosts } from '../../actions';
+import { Link } from 'react-router-dom';
+
 
 class PostsList extends React.Component {
 
-  state = {showDialogueBox: false};
+  componentDidMount() {
+    this.props.fetchPosts(this.props.match.params.id);
+  }
 
-  renderedList = this.props.posts.map(post => {
+    renderList() {
+      console.log(this.props.posts);
+     return this.props.posts.map(post => {
+       return (
+         <div className="item" key={post.post_id} >
+
+           <i className="large middle aligned icon camera" />
+           <div className="content">
+             <div>
+
+               <Link to={`/posts/${post.post_id}`} className="header">
+
+                 {post.title}
+               </Link>
+             </div>
+             <div className="description">{post.post}</div>
+           </div>
+         </div>
+           );
+           });
+   }
+
+    render() {
     return (
-    <PostItem
-      id={post.post_id}
-      text={post.post}
-      user={post.user_id}
-      onPostSelect={this.props.onPostSelect}
-      onGetComments={this.props.onGetComments}
-    />
-);
-  });
+   <div>
+     <div className="ui container">
 
+       <div className="ui celled list">{this.renderList()}</div>
 
-
-
-onPostSubmit = (text) => {
-  const data = qs.stringify({
-    group_id: this.props.posts[0].group_id,
-    post: text,
-    user_id: 23,
-    post_id: 50
-  });
-      console.log("inside OnPOstSubmit", text);
-      console.log(this.props.posts[0].group_id);
-         axios.post(url + "posts", data)
-  .then(
-         function(response) {
-             console.log("Post created", response);
-         },
-         function(error) {
-             console.log(error)
+     </div>
+   </div>
+            );
          }
-     );
-}
 
-render() {
-  return(
-  <div>
-    <div>
-      <CreatePostDialogue onPostSubmit={this.onPostSubmit}/>
-    </div>
-    <div className="ui relaxed divided list">{this.renderedList}</div>
-  </div>
-);
-}
-}
+  }
 
-export default PostsList;
+  const mapStateToProps = state => {
+    return {
+      posts: Object.values(state.posts)
+    };
+  };
+
+
+export default connect(mapStateToProps, { fetchPosts })(PostsList);

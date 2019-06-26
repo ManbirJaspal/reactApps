@@ -63,4 +63,15 @@ export const deleteStream = (id) => async dispatch => {
   await streams.delete(`/streams/${id}`);
 
   dispatch ({ type: DELETE_STREAM, payload: id});
+  history.push('/');
+};
+
+export const createSessionData = formValues => async (dispatch, getState) => {
+  const { userId } = getState().auth; //getting user ID from auth
+  const response = await streams.post('/streams', {...formValues, userId });
+  dispatch ({
+    type: CREATE_STREAM,
+    payload: response.data
+  });
+  history.push('/')
 };
