@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { signUp } from "../utils/RestUtils";
+import history from '../../history';
 import { Button, Form, Grid, Header, Message, Segment } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import qs from "qs";
@@ -31,6 +31,7 @@ export class Signup extends Component {
          .then(response => {
           console.log('SUCCESSFULLy REGISTERED AT CLIENT')
           console.log(response.data);
+          history.push("/login");
           })
           console.log(this.state);
   }

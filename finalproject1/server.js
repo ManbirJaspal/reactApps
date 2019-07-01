@@ -31,6 +31,7 @@ pool.connect(function(err){
 app.use(function(request, response, next) {
 response.header("Access-Control-Allow-Origin", "*");
 response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+response.header("Access-Control-Allow-Methods", "POST, PUT, GET, DELETE, OPTIONS");
 next();
 });
 
@@ -40,14 +41,26 @@ app.post('/student', createStudent);
 app.post('/login', studentLogin);
 app.get('/comments', getComments);
 app.post('/posts' , createPost);
+app.post('/groups', createGroup);
+app.get('/post', getPost);
+app.put('/post', updatePost);
+app.get('/group', getGroup);
+app.put('/group', updateGroup);
+app.delete('/post', deletePost);
+app.get('/comments', getComments);
+app.post('/comments', createComment);
+
+
+
+
 
 
 function createPost(request,response) {
   console.log("inside createPost");
   console.log(request.body);
-  var post = request.body.post,
+  var description = request.body.description,
    group_id = request.body.group_id,
-   user_id = request.body.user_id,
+   post_user_id = request.body.user_id,
    title = request.body.title;
 
     pool.connect((err, db, done) => {
@@ -55,19 +68,96 @@ function createPost(request,response) {
         return response.status(400).send(err);
       }
       else {
-        db.query('INSERT INTO posts (group_id, user_id, post, title) VALUES ($1, $2, $3, $4)', [group_id, user_id, post, title], (err, results, fields) => {
+        db.query('INSERT INTO posts (group_id, post_user_id, description, title) VALUES ($1, $2, $3, $4)', [group_id, post_user_id, description, title], (err, results, fields) => {
           done();
           if(err) {
             return response.status(400).send(err);
           }
             else {
               console.log(JSON.stringify(results.rows));
-               response.status(201).send({message: 'Post Succesfull', data: JSON.stringify(results.rows)});
+               response.status(201).send({message: 'Post insert Succesfull'});
           }
         })
       }
     })
   }
+
+  function createComment(request,response) {
+    console.log("inside createComment");
+    console.log(request.body);
+    var comment = request.body.comment,
+     post_id = request.body.post_id,
+     comment_user_id = request.body.comment_user_id;
+
+
+      pool.connect((err, db, done) => {
+        if(err) {
+          return response.status(400).send(err);
+        }
+        else {
+          db.query('INSERT INTO comments (post_id, comment_user_id, comment) VALUES ($1, $2, $3)', [post_id, comment_user_id, comment], (err, results, fields) => {
+            done();
+            if(err) {
+              return response.status(400).send(err);
+            }
+              else {
+                console.log(JSON.stringify(results.rows));
+                 response.status(201).send({message: 'Comment insert Succesfull'});
+            }
+          })
+        }
+      })
+    }
+
+  function createGroup(request,response) {
+    console.log("inside createGroup");
+    console.log(request.body);
+    var group_description = request.body.group_description,
+     group_user_id = request.body.user_id,
+     group_moderator = 23,
+     group_name = request.body.title;
+
+      pool.connect((err, db, done) => {
+        if(err) {
+          return response.status(400).send(err);
+        }
+        else {
+          db.query('INSERT INTO groups (group_user_id, group_description, group_name, group_moderator) VALUES ($1, $2, $3, $4)', [group_user_id, group_description, group_name, group_moderator], (err, results, fields) => {
+            done();
+            if(err) {
+              return response.status(400).send(err);
+            }
+              else {
+                console.log(JSON.stringify(results.rows));
+                 response.status(201).send({message: 'Group Insert Succesfull'});
+            }
+          })
+        }
+      })
+    }
+
+    async function deletePost(request,response) {
+      console.log("inside deletePost() in server");
+      console.log(request.params.post_id);
+      var post_id = parseInt(request.params.post_id);
+        pool.connect((err, db, done) => {
+          if(err) {
+            return response.status(400).send(err);
+          }
+          else {
+            db.query(` DELETE FROM posts where post_id=${post_id}`, (err, results, fields) => {
+              done();
+              if(err) {
+                return response.status(400).send(err);
+              }
+                else {
+
+                   response.status(200).send({message: 'Post DELETE Succesfull'});
+              }
+            })
+          }
+        })
+      }
 
 
 
@@ -89,6 +179,63 @@ if (groupName != null) {
     })
 }
 
+function getComments (request, response) {
+    console.log("inside getComments");
+    const post_id = request.query.post_id;
+    console.log(post_id);
+    var query =`SELECT * FROM comments join posts on comments.post_id = posts.post_id where comments.post_id=${post_id}`;
+    pool.query(query, function(error, results) {
+        if(error) {
+            throw error;
+        }
+        response.status(200).json(results.rows);
+    })
+}
+
+
+function getGroup( request, response) {
+  console.log("inside getGroup server.js");
+  const group_id = request.query.group_id;
+  console.log(group_id);
+  var query =`SELECT * FROM groups where group_id=${group_id}`;
+  pool.query(query, function(error, results) {
+      if(error) {
+          throw error;
+      }
+      console.log((results.rows))
+      response.status(200).json(results.rows)
+  })
+}
+
+
+function updateGroup(request, response){
+  console.log("inside upDAteGroup server.js");
+  var group_id = request.body.group_id,
+      group_name = request.body.group_name,
+      group_description = request.body.group_description;
+
+      console.log(group_id, group_name, group_description);
+
+  pool.connect((err, db, done) => {
+    if(err) {
+      return response.status(400).send(err);
+    }
+    else {
+      db.query("UPDATE posts SET group_description=$1, group_name=$2 where group_id=$3", [group_description, group_name, group_id], (err, table) => {
+        done();
+        if(err) {
+          return response.status(400).send(err);
+        }
+        else {
+          response.status(201).send({message: 'UPDATE SUCCESSFULL' });
+        }
+      })
+    }
+  })
+}
+
+
+
 function getPosts (request, response) {
     console.log("inside getPosts");
     const groupId = request.query.groupId;
@@ -102,18 +249,46 @@ function getPosts (request, response) {
     })
 }
 
-function getComments (request, response) {
-    console.log("inside getComments");
-    const postId = request.query.postId;
-    console.log(postId);
-    var query =`SELECT * FROM comments join posts on comments.post_id = posts.post_id where comments.post_id=${postId}`;
-    pool.query(query, function(error, results) {
-        if(error) {
-            throw error;
-        }
-        response.status(200).json(results.rows);
-    })
+function getPost( request, response) {
+  console.log("inside getPost server.js");
+  const post_id = request.query.post_id;
+  console.log(post_id);
+  var query =`SELECT * FROM posts where post_id=${post_id}`;
+  pool.query(query, function(error, results) {
+      if(error) {
+          throw error;
+      }
+      console.log((results.rows))
+      response.status(200).json(results.rows)
+  })
 }
+
+
+function updatePost(request, response){
+  console.log("inside upDAtePost server.js");
+  var post_id = request.body.post_id,
+      title = request.body.title,
+      description = request.body.description;
+
+  pool.connect((err, db, done) => {
+    if(err) {
+      return response.status(400).send(err);
+    }
+    else {
+      db.query("UPDATE posts SET description=$1, title=$2 where post_id=$3", [description, title, post_id], (err, table) => {
+        done();
+        if(err) {
+          return response.status(400).send(err);
+        }
+        else {
+          response.status(201).send({message: 'UPDATE SUCCESSFULL' });
+        }
+      })
+    }
+  })
+}
+
+
 
 function createStudent(request, response){
   console.log("inside createStudent()");
@@ -156,77 +331,12 @@ function studentLogin(request, response){
         }
           else {
             console.log(JSON.stringify(results.rows));
-             response.status(201).send({message: 'Login SUCCESSFULL', data: JSON.stringify(results.rows)});
+             response.status(200).send(results.rows);
         }
       })
     }
   })
-}```
-
-// async function createStudent (request, response){
-//     console.log("inside createStudent");
-//     var email = request.body.email,
-//         password = request.body.password,
-//         fname = request.body.fname,
-//         lname = request.body.lname;
-//
-//
-//     // console.log("req",req.body);
-//
-//   await pool.query('INSERT INTO student (student_email, student_password, student_fname, student_lname) VALUES ($1, $2, $3, $4)', [email, password, fname, lname], function (error, results, fields) {
-//
-//     console.log(response.status(200).json(results.rows));
-//
-//     response.send({
-//       "code":200,
-//       "success":"user registered sucessfully"
-//         });
-//   }
-//   );
-// }
-
-
-
-//     const email = request.body.email,
-//         password = request.body.password,
-//         fname = request.body.fname,
-//         lname = request.body.lname;
-//
-//
-//     pool.query('INSERT INTO student (student_email, student_password, student_fname, student_lname) VALUES ($1, $2, $3, $4)', [email, password, fname, lname], function(error, result) {
-//         if (error) {
-//             throw error
-//         }
-//         response.status(200);
-//
-//     });
-//
-// }
-
-// function loginStudent (request, response) {
-//     console.log("inside Login Student!!");
-//     console.log(request.body);
-//     var email = request.body.email;
-//     var password = request.body.password;
-//       pool.query('SELECT * FROM student WHERE student_email=$1 and student_password=$2', [email, password], function (error, results, fields) {
-//   if (error) {
-//      console.log("error ocurred",error);
-//     response.send({
-//       "code":400,
-//       "failed":"error ocurred"
-//     })} else {
-//         console.log(results, response.status(200).json(results.rows));
-//         response.send({
-//           "code":204,
-//           "success":"Email and password does not match"
-//             });
-//       }
-//
-//
-//
-//   });
-// }
-
+}
 
 
 app.listen(port);

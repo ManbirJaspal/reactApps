@@ -1,33 +1,32 @@
 import React from "react";
-import PostItem from "./PostItem";
-import PostCreate from './PostCreate';
+import CommentCreate from './CommentCreate';
 import { connect } from "react-redux";
-import { fetchPosts,clearPosts } from '../../actions';
+import { fetchComments, clearComments } from '../../actions';
 import { Link } from 'react-router-dom';
 
 
-class PostsList extends React.Component {
+class CommentsList extends React.Component {
 
   componentDidMount() {
-    this.props.fetchPosts(this.props.match.params.id);
+    this.props.fetchComments(this.props.match.params.id);
   }
 
   componentWillUnmount() {
-    this.props.clearPosts();
+    this.props.clearComments();
   }
 
-  renderAdmin = (post) => {
-    console.log("Inside renderADMIN () IN postList");
-    console.log(post.user_id, this.props.currentUserId);
-    if (post.post_user_id === this.props.currentUserId) {
+  renderAdmin = (comment) => {
+    console.log("Inside renderADMIN () IN commentList");
+    console.log(comment.comment_user_id, this.props.currentUserId);
+    if (comment.comment_user_id === this.props.currentUserId) {
 
       return (
         <div className="right floated content">
-          <Link to={`/posts/edit/${post.post_id}`} className="ui button primary">
+          <Link to={`/comments/edit/${comment.comment_id}`} className="ui button primary">
             Edit
           </Link>
           <Link
-            to={`/posts/delete/${post.post_id}`}
+            to={`/comments/delete/${comment.comment_id}`}
             className="ui button negative"
           >
             Delete
@@ -38,21 +37,14 @@ class PostsList extends React.Component {
   }
 
     renderList() {
-      console.log(this.props.posts);
-     return this.props.posts.map(post => {
+      console.log(this.props.comments);
+     return this.props.comments.map(comment => {
        return (
-         <div className="item" key={post.post_id} >
-           {this.renderAdmin(post)}
+         <div className="item" key={comment.comment_id} >
+           {this.renderAdmin(comment)}
            <i className="large middle aligned icon camera" />
            <div className="content">
-             <div>
-
-               <Link to={`/comments/${post.post_id}`} className="header">
-
-                 {post.title}
-               </Link>
-             </div>
-             <div className="description">{post.description}</div>
+             <div className="description">{comment.comment}</div>
            </div>
          </div>
            );
@@ -64,7 +56,7 @@ class PostsList extends React.Component {
      return (
        <div style={{ textAlign: 'right' }}>
          <Link
-           to={`/posts/new/${this.props.match.params.id}`}
+           to={`/comments/new/${this.props.match.params.id}`}
            className="ui grey basic button">Create a post
          </Link>
        </div>
@@ -88,11 +80,11 @@ class PostsList extends React.Component {
 
   const mapStateToProps = state => {
     return {
-      posts: Object.values(state.posts),
+      comments: Object.values(state.comments),
       currentUserId: state.auth.userId,
       isSignedIn: state.auth.isSignedIn
     };
   };
 
 
-export default connect(mapStateToProps, { fetchPosts, clearPosts })(PostsList);
+export default connect(mapStateToProps, { fetchComments, clearComments })(CommentsList);

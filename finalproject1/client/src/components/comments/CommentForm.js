@@ -1,7 +1,7 @@
 import React from 'react';
 import { Field, reduxForm } from 'redux-form';
 
-class GroupForm extends React.Component {
+class CommentForm extends React.Component {
 renderError({error, touched}){
   if (touched && error) {
     return (
@@ -14,7 +14,6 @@ renderError({error, touched}){
 
   renderInput = ({ input, label, meta }) =>  {
     const className= `field ${meta.error && meta.touched ? 'error': ''}`;
-    console.log(input);
 
     return  (
       <div className={className}>
@@ -25,17 +24,15 @@ renderError({error, touched}){
     );
   }
 
-  onSub = (formValues) => {
+  onSubmit = (formValues) => {
     // console.log(formValues);
     this.props.onSubmit(formValues);
   }
 
   render() {
     return (
-      <form onSubmit={this.props.handleSubmit(this.onSub)} className="ui form error">
-        <Field name="group_name" component={this.renderInput} label="Enter Title"></Field>
-
-        <Field name="group_description" component={this.renderInput} label="Enter Description"></Field>
+      <form onSubmit={this.props.handleSubmit(this.onSubmit)} className="ui form error">
+        <Field name="comment" component={this.renderInput} label="Enter Comment"></Field>
         <button className="ui button primary">Submit</button>
       </form>
     )
@@ -44,12 +41,10 @@ renderError({error, touched}){
 
 const validate = (formValues) => {
   const errors = {};
-  if(!formValues.group_name) {
-    errors.group_name = 'You must enter a title';
-  }
 
-  if (!formValues.group_description) {
-    errors.group_description = 'You must enter a description';
+
+  if (!formValues.comment) {
+    errors.comment = 'You must enter a Comment';
   }
 
   return errors;
@@ -57,6 +52,6 @@ const validate = (formValues) => {
 };
 
 export default reduxForm({
-  form: 'groupForm',
+  form: 'commentForm',
   validate: validate
-})(GroupForm);
+})(CommentForm);

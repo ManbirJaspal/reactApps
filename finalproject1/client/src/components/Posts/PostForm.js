@@ -14,7 +14,6 @@ renderError({error, touched}){
 
   renderInput = ({ input, label, meta }) =>  {
     const className= `field ${meta.error && meta.touched ? 'error': ''}`;
-    console.log(input);
 
     return  (
       <div className={className}>
@@ -25,14 +24,14 @@ renderError({error, touched}){
     );
   }
 
-  onSub = (formValues) => {
+  onSubmit = (formValues) => {
     // console.log(formValues);
-    this .props.onSubmit(formValues);
+    this.props.onSubmit(formValues);
   }
 
   render() {
     return (
-      <form onSubmit={this.props.handleSubmit(this.onSub)} className="ui form error">
+      <form onSubmit={this.props.handleSubmit(this.onSubmit)} className="ui form error">
         <Field name="title" component={this.renderInput} label="Enter Title"></Field>
 
         <Field name="description" component={this.renderInput} label="Enter Description"></Field>
@@ -45,11 +44,11 @@ renderError({error, touched}){
 const validate = (formValues) => {
   const errors = {};
   if(!formValues.title) {
-    errors.title = 'You must enter a Group title';
+    errors.title = 'You must enter a Post title';
   }
 
   if (!formValues.description) {
-    errors.description = 'You must enter a Group description';
+    errors.description = 'You must enter a Post description';
   }
 
   return errors;

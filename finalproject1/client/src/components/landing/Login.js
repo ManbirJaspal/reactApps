@@ -4,33 +4,48 @@ import { Link } from 'react-router-dom';
 import { Button, Form, Grid, Header, Message, Segment } from 'semantic-ui-react';
 import qs from 'qs';
 import { url } from "../utils/RestUtils";
+import { signIn } from '../../actions';
+import { connect } from "react-redux";
 
 
 
-export class Login extends React.Component {
+class Login extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             emailId: "",
             password: "",
             error: "",
-            login: false
+            u_id: null
         };
     }
 
      handleSubmit(event){
+
        const login_Data = qs.stringify({
          email: this.state.emailId,
-         password:this.state.password
+         password: this.state.password
        });
            axios.post(url + "login", login_Data)
             .then(response => {
-             console.log('Login successfull AT CLIENT')
-             this.setState({login: true});
-             console.log(response.data);
-             console.log(this.state);
-             })
-           }
+             console.log("response generated inside Login.js ",response.data[0]["student_id"]);
+              this.setState({ u_id: response.data[0]["student_id"]});
+              console.log(this.state);
+              this.callSignInAction();
+             },
+               function(error) {
+                 console.log(error)
+                       }
+                   );
+
+                 }
+
+    callSignInAction = () => {
+      console.log("inside callSignInAction()");
+      this.props.signIn(this.state.u_id);
+    }
+
+
 
     handleChange(event) {
         this.setState({
@@ -77,3 +92,5 @@ export class Login extends React.Component {
       )
     }
   }
+
+export default connect(null, { signIn })(Login);
