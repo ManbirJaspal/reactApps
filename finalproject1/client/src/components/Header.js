@@ -1,7 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { connect } from "react-redux";
+import { signOut } from '../actions';
+import Chat from './Chat';
 
-const Header = () => {
+class Header extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      chatOn: false
+    }
+  }
+  handleLogout = () => {
+    this.props.signOut();
+  }
+
+  chatOnClickHandler = () => {
+    console.log("inside chatOnClickHandler()");
+    this.setState({chatOn: true});
+  }
+  render() {
   return (
     <div className="ui container">
 
@@ -16,13 +34,20 @@ const Header = () => {
               <input type="text" placeholder="Search" />
             </div>
           </div>
-          <div className="item ">
+          <Link className="item" onClick={this.chatOnClickHandler}>
+            {this.state.chatOn === true ?
+                      <Chat />
+                    : null}
+                    Chat
+          </Link>
+          <Link onClick={this.handleLogout} to='/login' className="item ">
             Logout
-          </div>
+          </Link>
         </div>
       </div>
     </div>
   );
 };
+}
 
-export default Header;
+export default connect(null, { signOut })(Header);

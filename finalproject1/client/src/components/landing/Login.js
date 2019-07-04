@@ -16,33 +16,66 @@ class Login extends React.Component {
             emailId: "",
             password: "",
             error: "",
-            u_id: null
+            u_id: null,
+            mod: null
         };
     }
 
+    componentDidMount(props) {
+      var paramid = 'mod';
+      if (this.props.match.params.id === paramid) {
+        this.setState({mod: true});
+      }
+    }
+
+      componentWillUnmount() {
+        this.setState({mod: null});
+      }
+
+
+
      handleSubmit(event){
+        console.log(this.setState);
 
        const login_Data = qs.stringify({
          email: this.state.emailId,
-         password: this.state.password
+         password: this.state.password,
+         mod: this.state.mod
        });
-           axios.post(url + "login", login_Data)
-            .then(response => {
-             console.log("response generated inside Login.js ",response.data[0]["student_id"]);
-              this.setState({ u_id: response.data[0]["student_id"]});
-              console.log(this.state);
-              this.callSignInAction();
-             },
-               function(error) {
-                 console.log(error)
-                       }
-                   );
+
+       if(this.state.mod) {
+         axios.post(url + "login", login_Data)
+          .then(response => {
+           console.log("response generated inside Login.js ",response.data[0]["mod_id"]);
+            this.setState({ u_id: response.data[0]["mod_id"]});
+            console.log(this.state);
+            this.callSignInAction();
+           },
+             function(error) {
+               console.log(error)
+             }
+             );
+       } else {
+         axios.post(url + "login", login_Data)
+          .then(response => {
+           console.log("response generated inside Login.js ",response.data[0]["student_id"]);
+            this.setState({ u_id: response.data[0]["student_id"]});
+            console.log(this.state);
+            this.callSignInAction();
+           },
+             function(error) {
+               console.log(error)
+                     }
+                     );
+       }
+
+
 
                  }
 
     callSignInAction = () => {
       console.log("inside callSignInAction()");
-      this.props.signIn(this.state.u_id);
+      this.props.signIn(this.state.u_id, this.state.mod);
     }
 
 
@@ -51,6 +84,7 @@ class Login extends React.Component {
         this.setState({
             [event.target.name]: event.target.value
         });
+        console.log(this.state);
     };
 
 

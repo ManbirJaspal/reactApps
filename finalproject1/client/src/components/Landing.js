@@ -46,6 +46,7 @@ const Landing = () => {
           <Route path="/comments/:id" exact component={CommentsList} />
           <Route path="/comments/edit/:id" exact component={CommentEdit} />
           <Route path="/comments/new/:id" exact component={CommentCreate} />
+          <Route path="/login/:id" exact component={Login} />
 
           </Switch>
         </div>

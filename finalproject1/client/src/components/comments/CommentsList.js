@@ -52,12 +52,12 @@ class CommentsList extends React.Component {
    }
 
    renderCreate() {
-   if (this.props.isSignedIn) {
+     if (this.props.isSignedIn && this.props.mod == null) {
      return (
        <div style={{ textAlign: 'right' }}>
          <Link
            to={`/comments/new/${this.props.match.params.id}`}
-           className="ui grey basic button">Create a post
+           className="ui grey basic button">Create a comment
          </Link>
        </div>
      );
@@ -82,7 +82,8 @@ class CommentsList extends React.Component {
     return {
       comments: Object.values(state.comments),
       currentUserId: state.auth.userId,
-      isSignedIn: state.auth.isSignedIn
+      isSignedIn: state.auth.isSignedIn,
+      mod: state.auth.mod
     };
   };
 

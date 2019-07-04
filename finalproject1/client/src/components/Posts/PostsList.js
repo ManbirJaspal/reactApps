@@ -20,7 +20,6 @@ class PostsList extends React.Component {
     console.log("Inside renderADMIN () IN postList");
     console.log(post.user_id, this.props.currentUserId);
     if (post.post_user_id === this.props.currentUserId) {
-
       return (
         <div className="right floated content">
           <Link to={`/posts/edit/${post.post_id}`} className="ui button primary">
@@ -31,6 +30,15 @@ class PostsList extends React.Component {
             className="ui button negative"
           >
             Delete
+          </Link>
+        </div>
+      );
+    }
+    if(this.props.mod === true && post.alert === "true") {
+      return (
+        <div className="right floated content">
+          <Link to={`/posts`} className="ui button primary">
+            Alert
           </Link>
         </div>
       );
@@ -46,21 +54,30 @@ class PostsList extends React.Component {
            <i className="large middle aligned icon camera" />
            <div className="content">
              <div>
-
-               <Link to={`/comments/${post.post_id}`} className="header">
-
+               <Link  to={`/comments/${post.post_id}`} className="header">
                  {post.title}
                </Link>
+               <div class="meta">
+          <span>Description</span>
+        </div>
+        <div className=" description">
+          <p>{post.description}</p>
+        </div>
+        <div class="extra content">
+          <span>created by:      {post.post_user_id}</span>
+        </div>
+
              </div>
-             <div className="description">{post.description}</div>
            </div>
          </div>
+
            );
            });
    }
 
    renderCreate() {
-   if (this.props.isSignedIn) {
+     if (this.props.isSignedIn && this.props.mod == null) {
+
      return (
        <div style={{ textAlign: 'right' }}>
          <Link
@@ -71,6 +88,7 @@ class PostsList extends React.Component {
      );
    }
  }
+
 
     render() {
     return (
@@ -90,7 +108,8 @@ class PostsList extends React.Component {
     return {
       posts: Object.values(state.posts),
       currentUserId: state.auth.userId,
-      isSignedIn: state.auth.isSignedIn
+      isSignedIn: state.auth.isSignedIn,
+      mod: state.auth.mod
     };
   };
 

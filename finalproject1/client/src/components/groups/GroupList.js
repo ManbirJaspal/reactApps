@@ -13,18 +13,26 @@ class GroupList extends React.Component {
   renderList() {
    return this.props.groups.map(group => {
      return (
-       <div className="item" key={group.group_id} >
+
+       <div className="item" key={group.group_id}>
          {this.renderAdmin(group)}
          <i className="large middle aligned icon camera" />
          <div className="content">
            <div>
-
              <Link to={`/posts/${group.group_id}`} className="header">
-
                {group.group_name}
              </Link>
+             <div class="meta">
+        <span>Description</span>
+      </div>
+      <div className=" description">
+        <p>{group.group_description}</p>
+      </div>
+      <div class="extra content">
+        <span>created by:      {group.group_user_id}</span>
+
+      </div>
            </div>
-           <div className="description">{group.group_description}</div>
          </div>
        </div>
          );
@@ -53,7 +61,7 @@ class GroupList extends React.Component {
  }
 
  renderCreate() {
- if (this.props.isSignedIn) {
+ if (this.props.isSignedIn && this.props.mod == null) {
    return (
      <div style={{ textAlign: 'right' }}>
        <Link
@@ -84,7 +92,8 @@ const mapStateToProps = state => {
   return {
     groups: Object.values(state.groups),
     currentUserId: state.auth.userId,
-    isSignedIn: state.auth.isSignedIn
+    isSignedIn: state.auth.isSignedIn,
+    mod: state.auth.mod
   };
 };
 

@@ -4,11 +4,28 @@ const Pool = require('pg').Pool;
 var http = require('http');
 var formidable = require('formidable');
 var fs = require('fs');
+var bcrypt = require('bcrypt');
+const saltRounds = 10;
+var cookieParser = require('cookie-parser');
+
 
 const app = express();
 const port = 8082;
 
+var session = require('express-session');
+
+
 var hosts = ['http://localhost:3000'].join(', ');
+
+var substrings = ["one", "two", "three", "kill", "i am going to kill", "depression", "I am depressed", "i am going to suicide", "suicide", "kill", "shoot", "shoot myself"];
+// var str;
+// str = "i am going to kill";
+//   if (substrings.some(function(v) { return str.indexOf(v) >= 0; })) {
+//     console.log("Alert '" + str + "'");
+//   }
+//   else {
+//     console.log("No Alert '" + str + "'");
+//   }
 
 const pool = new Pool({
     user: 'sahibjaspal',
@@ -27,6 +44,13 @@ pool.connect(function(err){
 
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true}));
+  app.use(cookieParser());
+  app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: true,
+  // cookie: { secure: true }
+}))
 
 app.use(function(request, response, next) {
 response.header("Access-Control-Allow-Origin", "*");
@@ -62,20 +86,38 @@ function createPost(request,response) {
    group_id = request.body.group_id,
    post_user_id = request.body.user_id,
    title = request.body.title;
+   var alert;
+   var str;
+   str = description
+     if (substrings.some(function(v) { return str.indexOf(v) >= 0; })) {
+       alert = 'true';
 
+     } else {
+       alert = null;
+     }
+
+     console.log(alert);
     pool.connect((err, db, done) => {
       if(err) {
         return response.status(400).send(err);
       }
       else {
-        db.query('INSERT INTO posts (group_id, post_user_id, description, title) VALUES ($1, $2, $3, $4)', [group_id, post_user_id, description, title], (err, results, fields) => {
+        db.query('INSERT INTO posts (group_id, post_user_id, description, title, alert) VALUES ($1, $2, $3, $4, $5)', [group_id, post_user_id, description, title, alert], (err, results, fields) => {
           done();
           if(err) {
             return response.status(400).send(err);
           }
             else {
-              console.log(JSON.stringify(results.rows));
-               response.status(201).send({message: 'Post insert Succesfull'});
+              var str;
+              str = description
+                if (substrings.some(function(v) { return str.indexOf(v) >= 0; })) {
+                  console.log(JSON.stringify(results.rows));
+                   response.status(201).send({message: 'Post insert Succesfull', alert: 'alert'});
+                }
+                else {
+                  console.log(JSON.stringify(results.rows));
+                   response.status(201).send({message: 'Post insert Succesfull'});
+                }
           }
         })
       }
@@ -301,15 +343,19 @@ function createStudent(request, response){
       return response.status(400).send(err);
     }
     else {
-      db.query('INSERT INTO student (student_email, student_password, student_fname, student_lname) VALUES ($1, $2, $3, $4)', [email, password, fname, lname], (err, table) => {
-        done();
-        if(err) {
-          return response.status(400).send(err);
-        }
-        else {
-          response.status(201).send({message: 'REGISTRATION SUCCESSFULL' });
-        }
-      })
+
+      bcrypt.hash(password, saltRounds, function(err, hash) {
+        db.query('INSERT INTO student (student_email, student_password, student_fname, student_lname) VALUES ($1, $2, $3, $4)', [email, hash, fname, lname], (err, table) => {
+          done();
+          if(err) {
+            return response.status(400).send(err);
+          }
+          else {
+            response.status(201).send({message: 'REGISTRATION SUCCESSFULL' });
+          }
+        })
+});
+
     }
   })
 }
@@ -317,22 +363,55 @@ function createStudent(request, response){
 function studentLogin(request, response){
   console.log("inside StudentLogin()");
   var email = request.body.email,
-      password = request.body.password;
+      password = request.body.password,
+      mod = request.body.mod;
+
+      var query = "";
+
+     if (mod) {
+       query = `SELECT * FROM moderators WHERE mod_email=$1`;
+
+     } else {
+       query = `SELECT * FROM student WHERE student_email=$1`;
+     }
 
   pool.connect((err, db, done) => {
     if(err) {
       return response.status(400).send(err);
     }
     else {
-      db.query('SELECT * FROM student WHERE student_email=$1 and student_password=$2', [email, password], (err, results, fields) => {
+      db.query(query, [email], (err, results, fields) => {
         done();
         if(err) {
           return response.status(400).send(err);
         }
-          else {
-            console.log(JSON.stringify(results.rows));
-             response.status(200).send(results.rows);
-        }
+        if ( results.length === 0){
+              return response.data
+            }
+
+            var hash="";
+
+
+            if (mod) {
+              console.log(results.rows[0]);
+
+               hash = results.rows[0]["mod_password"].toString();
+               mod = false;
+            } else {
+              // console.log(results.rows[0]["student_password"].toString());
+
+               hash = results.rows[0]["student_password"].toString();
+            }
+
+            bcrypt.compare(password, hash, function(err, res) {
+
+                  console.log(JSON.stringify(results.rows));
+                   response.status(200).send(results.rows);
+                   console.log("Login SUCCESSFULL");
+              });
+
+
+
       })
     }
   })

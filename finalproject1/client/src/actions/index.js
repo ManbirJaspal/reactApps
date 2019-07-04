@@ -4,7 +4,7 @@ import axios from "axios";
 import qs from 'qs';
 
 import {
-  SIGN_IN, SIGN_OUT,
+  SIGN_IN, SIGN_OUT, MOD_SIGN_IN,
   CREATE_POST,
   GET_GROUPS,
   FETCH_POSTS,
@@ -24,12 +24,21 @@ import {
 
 } from './types';
 
-export const signIn = (id) => (dispatch) => {
-  console.log("inside signIn action", id)
-  dispatch({
-    type: SIGN_IN,
-    payload: id
-  })
+export const signIn = (id, mod) => (dispatch) => {
+  console.log("inside signIn action", id, mod)
+  if (mod) {
+    console.log("inside mod_signin action");
+    dispatch({
+      type: MOD_SIGN_IN,
+      payload: id, mod
+    })
+  } else {
+    dispatch({
+      type: SIGN_IN,
+      payload: id
+    })
+  }
+
   history.push('/groups');
 };
 
