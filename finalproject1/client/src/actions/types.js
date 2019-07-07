@@ -18,3 +18,7 @@ export const EDIT_COMMENT = 'EDIT_COMMENT';
 export const CREATE_COMMENT = 'CREATE_COMMENT';
 export const FETCH_COMMENT = 'FETCH_COMMENT';
 export const CLEAR_COMMENTS = 'CLEAR_COMMENTS';
+export const FETCH_CHAT = 'FETCH_CHAT';
+export const SEND_MESSAGE = 'SEND_MESSAGE';
+export const CHAT_WITH_ID = 'CHAT_WITH_ID';
+export const CHAT_UNMOUNT = 'CHAT_UNMOUNT';

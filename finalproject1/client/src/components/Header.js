@@ -2,13 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from "react-redux";
 import { signOut } from '../actions';
-import Chat from './Chat';
 
 class Header extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      chatOn: false
     }
   }
   handleLogout = () => {
@@ -16,8 +14,8 @@ class Header extends React.Component {
   }
 
   chatOnClickHandler = () => {
-    console.log("inside chatOnClickHandler()");
-    this.setState({chatOn: true});
+    // console.log("inside chatOnClickHandler()");
+    // this.setState({chatOn: true});
   }
   render() {
   return (
@@ -34,11 +32,7 @@ class Header extends React.Component {
               <input type="text" placeholder="Search" />
             </div>
           </div>
-          <Link className="item" onClick={this.chatOnClickHandler}>
-            {this.state.chatOn === true ?
-                      <Chat />
-                    : null}
-                    Chat
+          <Link className="item" to="/chatwith"> Chat
           </Link>
           <Link onClick={this.handleLogout} to='/login' className="item ">
             Logout

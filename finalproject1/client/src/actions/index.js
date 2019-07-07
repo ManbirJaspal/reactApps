@@ -20,9 +20,15 @@ import {
   EDIT_COMMENT,
   DELETE_COMMENT,
   CLEAR_POSTS,
-  CLEAR_COMMENTS
+  CLEAR_COMMENTS,
+  FETCH_CHAT,
+  SEND_MESSAGE,
+  CHAT_WITH_ID,
+  CHAT_UNMOUNT,
 
 } from './types';
+
+//LOGIN ACTIONS
 
 export const signIn = (id, mod) => (dispatch) => {
   console.log("inside signIn action", id, mod)
@@ -49,32 +55,10 @@ export const signOut = () => {
   };
 };
 
-export const createPost = (formValues, id) => async (dispatch, getState) => {
-  console.log("inside createPost actions");
-  const {userId} = getState().auth;
-  const createPost_Data = qs.stringify({
-    group_id: id,
-    description: formValues.description,
-    user_id: userId,
-    title: formValues.title
-  });
 
-  await axios.post(url + "posts", createPost_Data)
-  .then(response => {
-    console.log('Post created at actions.');
-    console.log(response.data);
-    dispatch({
-      type: CREATE_POST,
-      payload: response.data
-    })
-    history.push(`/posts/${id}`);
-  },
-  function(error) {
-    console.log(error)
-  }
-);
-}
+//GROUP RELATED ACTIONS
 
+// ****************************************************************************
 
 export const createGroup = formValues => async (dispatch, getState) => {
 
@@ -160,6 +144,39 @@ export const editGroup = (id, formValues) => async dispatch => {
   });
 }
 
+// ****************************************************************************
+
+
+// POST RELATED ACTIONS
+
+export const createPost = (formValues, id) => async (dispatch, getState) => {
+  console.log("inside createPost actions");
+  const {userId} = getState().auth;
+  const createPost_Data = qs.stringify({
+    group_id: id,
+    description: formValues.description,
+    user_id: userId,
+    title: formValues.title
+  });
+
+  await axios.post(url + "posts", createPost_Data)
+  .then(response => {
+    console.log('Post created at actions.');
+    console.log(response.data);
+    dispatch({
+      type: CREATE_POST,
+      payload: response.data
+    })
+    history.push(`/posts/${id}`);
+  },
+  function(error) {
+    console.log(error)
+  }
+);
+}
+
+
+
 
 export const fetchPosts = (id) => async dispatch => {
   console.log("inside fetchPosts in actions");
@@ -176,6 +193,7 @@ export const fetchPosts = (id) => async dispatch => {
     console.log(error);
   });
 }
+
 
 export const fetchPost = (id) => async dispatch => {
   console.log("inside fetchPost in actions");
@@ -240,6 +258,13 @@ export const clearPosts = () => (dispatch) => {
     type: CLEAR_POSTS
   })
 };
+
+
+// ****************************************************************************
+
+
+//COMMENT RELATED ACTIONS
+
 
 export const createComment = (formValues, id) => async (dispatch, getState) => {
   console.log("inside createComment actions");
@@ -327,4 +352,110 @@ export const editComment = (id, formValues) => async dispatch => {
   // }, function(error) {
   //   console.log(error);
   // });
+}
+
+// ****************************************************************************
+
+
+//CHAT RELATED ACTIONS
+
+export const fetchChat = (chat_mod_id, chat_user_id) => async (dispatch, getState) => {
+  console.log("inside fetchChat in actions");
+
+  var {userId} = getState().auth;
+  var {mod} = getState().auth;
+  var {mod_id} = getState().auth;
+  var {chatWithId} = getState().chats;
+
+  if(mod) {
+    await axios.get(url + "getmessages", {params: {
+      chat_user_id : chatWithId,
+      chat_mod_id : mod_id
+    }
+    })
+    .then(response => {
+      console.log(response.data);
+      dispatch({
+        type: FETCH_CHAT,
+        payload: response.data
+      })
+    }, function(error) {
+      console.log(error);
+    });
+
+  } else {
+    await axios.get(url + "getMessages", {params: {
+      chat_user_id : userId,
+      chat_mod_id : chatWithId
+    }
+    })
+    .then(response => {
+      console.log(response.data);
+      dispatch({
+        type: FETCH_CHAT,
+        payload: response.data
+      })
+    }, function(error) {
+      console.log(error);
+    });
+  }
+}
+
+export const chatWithID = (formValues) => async dispatch => {
+    dispatch({
+      type:CHAT_WITH_ID,
+      payload: formValues.chat_id
+    });
+    history.push('/messageform');
+}
+
+
+export const sendMessage = (message) => async (dispatch, getState) => {
+  console.log("inside sendMessage actions");
+  var {userId} = getState().auth;
+  var {mod} = getState().auth;
+  var {mod_id} = getState().auth;
+  var {chatWithId} = getState().chats;
+  var createdBy = '';
+  var createMessage_data;
+
+  if(mod) {
+    createdBy = 'mod';
+     createMessage_data = qs.stringify({
+            message : message,
+            chat_user_id : chatWithId,
+            chat_mod_id : mod_id,
+            created_by : createdBy
+    });
+  } else {
+    createdBy = 'student';
+     createMessage_data = qs.stringify({
+            message : message,
+            chat_user_id : userId,
+            chat_mod_id : chatWithId,
+            created_by : createdBy
+    });
+  }
+
+  await axios.post(url + "chaton", createMessage_data)
+  .then(response => {
+    console.log('Message sent at actions.');
+    console.log(response.data);
+    dispatch({
+      type: SEND_MESSAGE,
+      payload: response.data
+    })
+
+  },
+  function(error) {
+    console.log(error)
+  }
+);
+}
+
+export const chatUnmount = () => async dispatch => {
+    dispatch({
+      type:CHAT_UNMOUNT
+    });
+    history.push('/groups');
 }

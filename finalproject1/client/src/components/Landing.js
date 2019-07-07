@@ -15,6 +15,9 @@ import PostDelete from './Posts/PostDelete';
 import CommentsList from './comments/CommentsList';
 import CommentEdit from './comments/CommentEdit';
 import CommentCreate from './comments/CommentCreate';
+import MessageForm from './chat/MessageForm';
+import Chat from './chat/Chat';
+
 
 
 
@@ -47,6 +50,9 @@ const Landing = () => {
           <Route path="/comments/edit/:id" exact component={CommentEdit} />
           <Route path="/comments/new/:id" exact component={CommentCreate} />
           <Route path="/login/:id" exact component={Login} />
+          <Route path="/messageform" exact component={MessageForm} />
+          <Route path="/chatwith" exact component={Chat} />
+
 
           </Switch>
         </div>
