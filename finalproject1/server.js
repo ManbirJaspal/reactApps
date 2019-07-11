@@ -81,6 +81,39 @@ app.get('/getmessages', getChat);
 
 //*****************************************************************************
 
+//Random Username generator
+
+function haiku(){
+  var adjs = ["autumn", "hidden", "bitter", "misty", "silent", "empty", "dry",
+  "dark", "summer", "icy", "delicate", "quiet", "white", "cool", "spring",
+  "winter", "patient", "twilight", "dawn", "crimson", "wispy", "weathered",
+  "blue", "billowing", "broken", "cold", "damp", "falling", "frosty", "green",
+  "long", "late", "lingering", "bold", "little", "morning", "muddy", "old",
+  "red", "rough", "still", "small", "sparkling", "throbbing", "shy",
+  "wandering", "withered", "wild", "black", "young", "holy", "solitary",
+  "fragrant", "aged", "snowy", "proud", "floral", "restless", "divine",
+  "polished", "ancient", "purple", "lively", "nameless"]
+
+  , nouns = ["waterfall", "river", "breeze", "moon", "rain", "wind", "sea",
+  "morning", "snow", "lake", "sunset", "pine", "shadow", "leaf", "dawn",
+  "glitter", "forest", "hill", "cloud", "meadow", "sun", "glade", "bird",
+  "brook", "butterfly", "bush", "dew", "dust", "field", "fire", "flower",
+  "firefly", "feather", "grass", "haze", "mountain", "night", "pond",
+  "darkness", "snowflake", "silence", "sound", "sky", "shape", "surf",
+  "thunder", "violet", "water", "wildflower", "wave", "water", "resonance",
+  "sun", "wood", "dream", "cherry", "tree", "fog", "frost", "voice", "paper",
+  "frog", "smoke", "star"];
+
+  return adjs[Math.floor(Math.random()*(adjs.length-1))]+"_"+nouns[Math.floor(Math.random()*(nouns.length-1))];
+}
+
+//*****************************************************************************
+
+
+
+//*****************************************************************************
+
+
 //LOGIN AND REGISTER FUNCTIONS
 
 function createStudent(request, response){
@@ -88,15 +121,20 @@ function createStudent(request, response){
   var email = request.body.email,
   password = request.body.password,
   fname = request.body.fname,
+  student_a_id = request.body.a_id,
   lname = request.body.lname;
+
   pool.connect((err, db, done) => {
     if(err) {
       return response.status(400).send(err);
     }
     else {
 
-      bcrypt.hash(password, saltRounds, function(err, hash) {
-        db.query('INSERT INTO student (student_email, student_password, student_fname, student_lname) VALUES ($1, $2, $3, $4)', [email, hash, fname, lname], (err, table) => {
+      bcrypt.hash(password, saltRounds, function(err, hash1) {
+        bcrypt.hash(student_a_id, saltRounds, function(err, hash2) {
+
+
+        db.query('INSERT INTO student (student_email, student_password, student_fname, student_lname, student_a_id) VALUES ($1, $2, $3, $4, $5)', [email, hash1, fname, lname, hash2], (err, table) => {
           done();
           if(err) {
             return response.status(400).send(err);
@@ -105,17 +143,34 @@ function createStudent(request, response){
             response.status(201).send({message: 'REGISTRATION SUCCESSFULL' });
           }
         })
-      });
+      }
+        );
+       });
 
     }
   })
 }
 
+// async function hashPassword(pass) {
+//
+//   var password = pass;
+//
+//   const hashedPassword = await new Promise((resolve, reject) => {
+//     bcrypt.hash(password, saltRounds, function(err, hash) {
+//       if (err) reject(err)
+//       resolve(hash)
+//     });
+//   })
+//
+//   return hashedPassword
+// }
+
 function studentLogin(request, response){
   console.log("inside StudentLogin()");
   var email = request.body.email,
   password = request.body.password,
-  mod = request.body.mod;
+  mod = request.body.mod,
+  a_id = request.body.a_id;
 
   var query = "";
 
@@ -159,6 +214,8 @@ function studentLogin(request, response){
     }
   })
 }
+
+
 
 //*****************************************************************************
 

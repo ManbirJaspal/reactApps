@@ -58,8 +58,8 @@ class Login extends React.Component {
        } else {
          axios.post(url + "login", login_Data)
           .then(response => {
-           console.log("response generated inside Login.js ",response.data[0]["student_id"]);
-            this.setState({ u_id: response.data[0]["student_id"]});
+           // console.log("response generated inside Login.js ",response.data[0]["student_id"]);
+            // this.setState({ u_id: response.data[0]["student_id"]});
             console.log(this.state);
             this.callSignInAction();
            },
